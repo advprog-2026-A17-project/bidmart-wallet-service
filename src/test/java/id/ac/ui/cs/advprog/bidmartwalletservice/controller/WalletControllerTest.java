@@ -29,7 +29,7 @@ class WalletControllerTest {
 
         when(walletService.findWalletByUserId("user-123")).thenReturn(wallet);
 
-        mockMvc.perform(get("/api/wallet/user-123"))
+        mockMvc.perform(get("/user-123"))
                 .andExpect(status().isOk());
     }
 
@@ -41,7 +41,7 @@ class WalletControllerTest {
 
         when(walletService.topUpBalance("user-123", 5000L)).thenReturn(updatedWallet);
 
-        mockMvc.perform(post("/api/wallet/user-123/top-up")
+        mockMvc.perform(post("/user-123/top-up")
                         .param("amount", "5000"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.activeBalance").value(15000));
