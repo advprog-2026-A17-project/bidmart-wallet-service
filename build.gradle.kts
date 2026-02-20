@@ -42,7 +42,11 @@ sonar {
         property("sonar.projectKey", "advprog-2026-A17-project_bidmart-wallet-service")
         property("sonar.organization", "advprog-2026-a17-project")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")    }
+        property(
+            "sonar.coverage.jacoco.xmlReportPaths",
+            "${layout.buildDirectory.get()}/reports/jacoco/test/jacocoTestReport.xml"
+        )
+    }
 }
 
 tasks.withType<Test> {
@@ -58,4 +62,9 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(true)
+    }
 }
