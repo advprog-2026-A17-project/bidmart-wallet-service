@@ -1,7 +1,9 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.3"
+    id("org.springframework.boot") version "3.5.11"
     id("io.spring.dependency-management") version "1.1.7"
+    id("jacoco")
+    id("org.sonarqube") version "5.0.0.4638"
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -26,16 +28,45 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-thymeleaf-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.8".toBigDecimal()
+            }
+        }
+    }
+}
+
+tasks.check {
+    dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "advprog-2026-A17-project_bidmart-wallet-service")
+        property("sonar.organization", "advprog-2026-a17-project")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
