@@ -31,6 +31,15 @@ class WalletServiceImplTest {
     }
 
     @Test
+    void testCreateWallet() {
+        when(walletRepository.createWallet(any(Wallet.class))).thenReturn(wallet);
+        Wallet savedWallet = walletService.create(wallet);
+
+        assertNotNull(savedWallet);
+        assertEquals("userTest", savedWallet.getUserId());
+    }
+
+    @Test
     void testFindWalletByUserId_Success() {
         when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
         Wallet result = walletService.findWalletByUserId("userTest");
@@ -50,7 +59,6 @@ class WalletServiceImplTest {
 
     @Test
     void testTopUpBalance_Success() {
-        // Arrange
         when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
         when(walletRepository.updateWallet(any(Wallet.class))).thenReturn(wallet);
         Wallet result = walletService.topUpBalance("userTest", 5000L);
