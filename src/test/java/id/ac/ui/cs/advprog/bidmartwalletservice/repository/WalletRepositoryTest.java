@@ -63,13 +63,26 @@ public class WalletRepositoryTest {
     }
 
     @Test
-    void testFindWalletByUserId_NotFound() {
+    void testFindWalletByUserId() {
+        Wallet wallet = new Wallet();
+        wallet.setId(0L);
+        wallet.setUserId("userTest");
+        wallet.setActiveBalance(10000);
+        wallet.setHeldBalance(5000);
+        walletRepository.createWallet(wallet);
+
+        Optional<Wallet> result = walletRepository.findWalletByUserId("userTest");
+        assertEquals(wallet, result.get() );
+    }
+
+    @Test
+    void testFindWalletByUserIdNotFound() {
         Optional<Wallet> result = walletRepository.findWalletByUserId("unknown");
         assertFalse(result.isPresent());
     }
 
     @Test
-    void testFindAll_WithData() {
+    void testFindAllWallet() {
         walletRepository.createWallet(new Wallet());
         walletRepository.createWallet(new Wallet());
 
