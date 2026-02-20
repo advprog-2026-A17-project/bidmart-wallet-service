@@ -37,6 +37,14 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+sonar {
+    properties {
+        property("sonar.projectKey", "advprog-2026-A17-project_bidmart-wallet-service")
+        property("sonar.organization", "advprog-2026-a17-project")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")    }
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -50,13 +58,4 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
-}
-
-sonar {
-    properties {
-        property("sonar.projectKey", "advprog-2026-A17-project_bidmart-wallet-service")
-        property("sonar.organization", "advprog-2026-a17-project")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml")
-    }
 }
