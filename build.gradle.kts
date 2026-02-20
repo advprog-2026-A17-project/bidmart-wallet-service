@@ -1,8 +1,9 @@
 plugins {
     java
     jacoco
-    id("org.springframework.boot") version "3.4.2"
+    id("org.springframework.boot") version "3.5.11"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.sonarqube") version "5.0.0.4638"
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -49,4 +50,13 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "advprog-2026-A17-project_bidmart-wallet-service")
+        property("sonar.organization", "advprog-2026-a17-project")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+    }
 }
