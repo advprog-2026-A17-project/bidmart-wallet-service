@@ -27,19 +27,6 @@ public class WalletRepository {
         return newWallet;
     }
 
-    public boolean deleteWallet(Long walletId) {
-        return walletList.removeIf(wallet -> wallet.getId().equals(walletId));
-    }
-
-    public Optional<Wallet> findWalletById(Long id){
-        for (Wallet wallet : walletList) {
-            if (wallet.getId().equals(id)) {
-                return Optional.of(wallet);
-            }
-        }
-        return Optional.empty();
-    }
-
     public Optional<Wallet> findWalletByUserId(String id){
         for (Wallet wallet : walletList) {
             if (wallet.getUserId().equals(id)) {
