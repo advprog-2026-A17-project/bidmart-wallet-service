@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.controller;
 
+import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
+import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletTransactionRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
@@ -15,9 +17,14 @@ import java.util.List;
 public class WalletController {
 
     private final WalletService walletService;
+    private final WalletTransactionRepository transactionRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
 
-    public WalletController(WalletService walletService) {
+    public WalletController(WalletService walletService, WalletTransactionRepository walletTransactionRepository) {
         this.walletService = walletService;
+        this.walletTransactionRepository = walletTransactionRepository;
+        this.transactionRepository = walletTransactionRepository;
+
     }
 
     @GetMapping("/")
@@ -35,7 +42,9 @@ public class WalletController {
     @GetMapping("/{userId}")
     public String getWallet(@PathVariable String userId, Model model) {
         Wallet wallet = walletService.findWalletByUserId(userId);
+        List<WalletTransaction> history = transactionRepository.findHistoryByUserId(userId);
         model.addAttribute("wallet", wallet);
+        model.addAttribute("history", history);
         return "WalletDetail";
     }
 
