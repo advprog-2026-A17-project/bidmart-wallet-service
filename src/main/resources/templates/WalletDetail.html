@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dompet - BidMart</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; display: flex; gap: 20px; }
+        .card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        h2 { margin-top: 0; color: #333; }
+        .balance { font-size: 24px; color: #4CAF50; font-weight: bold; margin: 10px 0; }
+        input[type="number"] { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #008CBA; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #007B9E; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Informasi Dompet</h2>
+    <p><strong>User ID:</strong> <span th:text="${wallet.userId}">user-id</span></p>
+    <p>Saldo Saat Ini:</p>
+    <div class="balance">Rp <span th:text="${wallet.activeBalance}">0</span></div>
+    <p>Saldo yang tertahan saat ini:</p>
+    <div class="balance">Rp <span th:text="${wallet.heldBalance}">0</span></div>
+</div>
+
+<div class="card">
+    <h2>Top Up Saldo</h2>
+    <form th:action="@{/api/v1/wallet/{id}/top-up(id=${wallet.userId})}" method="post">
+        <label>Jumlah Top Up (Rp):</label>
+        <input type="number" name="amount" min="1000" placeholder="Minimal Rp 1000" required>
+        <button type="submit">Tambah Saldo</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Tarik Saldo</h2>
+    <form th:action="@{/api/v1/wallet/{id}/withdraw(id=${wallet.userId})}" method="post">
+        <label>Jumlah Penarikan (Rp):</label>
+        <input type="number" name="amount" min="1000" placeholder="Minimal Rp 1000" required>
+        <button type="submit">Tarik Saldo</button>
+    </form>
+</div>
+
+<div class="card">
+    <h2>Coba Bid</h2>
+    <form th:action="@{/api/v1/wallet/{id}/trybid(id=${wallet.userId})}" method="post">
+        <label>Jumlah Bid (Rp):</label>
+        <input type="number" name="amount" min="1000" placeholder="Minimal Rp 1000" required>
+        <button type="submit">Bid</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -11,8 +11,7 @@ import java.util.List;
 
 
 @Controller
-//@RestController
-//@RequestMapping("/api/wallet")
+@RequestMapping("/api/v1/wallet")
 public class WalletController {
 
     private final WalletService walletService;
@@ -34,14 +33,26 @@ public class WalletController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Wallet> getWallet(@PathVariable String userId) {
+    public String getWallet(@PathVariable String userId, Model model) {
         Wallet wallet = walletService.findWalletByUserId(userId);
-        return ResponseEntity.ok(wallet);
+        model.addAttribute("wallet", wallet);
+        return "WalletDetail";
     }
 
     @PostMapping("/{userId}/top-up")
-    public ResponseEntity<Wallet> topUp(@PathVariable String userId, @RequestParam Long amount) {
-        Wallet updatedWallet = walletService.topUpBalance(userId, amount);
-        return ResponseEntity.ok(updatedWallet);
+    public String topUp(@PathVariable String userId, @RequestParam Long amount) {
+        walletService.topUpBalance(userId, amount);
+        return "redirect:/api/v1/wallet/" + userId;
+    }
+
+    @PostMapping("/{userId}/trybid")
+    public String tryToBid(@PathVariable String userId, @RequestParam Long amount) {
+        walletService.bidding(userId, amount);
+        return "redirect:/api/v1/wallet/" + userId;
+    }
+    @PostMapping("/{userId}/withdraw")
+    public String withdraw(@PathVariable String userId, @RequestParam Long amount) {
+        walletService.withdrawal(userId, amount);
+        return "redirect:/api/v1/wallet/" + userId;
     }
 }

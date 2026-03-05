@@ -6,7 +6,7 @@
 <body>
 <div style="border: 1px solid black; padding: 10px; width: 300px;">
     <h3>Add new wallet</h3>
-    <form th:action="@{/add}" method="post">
+    <form th:action="@{/api/v1/wallet/add}" method="post">
         <label>User ID:</label><br>
         <input type="text" name="userId" placeholder="example: user-001" required><br><br>
 

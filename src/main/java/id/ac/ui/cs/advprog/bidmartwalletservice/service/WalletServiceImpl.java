@@ -3,11 +3,7 @@ package id.ac.ui.cs.advprog.bidmartwalletservice.service;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class WalletServiceImpl implements WalletService{
@@ -20,20 +16,17 @@ public class WalletServiceImpl implements WalletService{
 
     @Override
     public Wallet create(Wallet wallet){
-        return walletRepository.createWallet(wallet);
+        return walletRepository.save(wallet);
     }
 
     @Override
     public List<Wallet> findAll() {
-        Iterator<Wallet> productIterator = walletRepository.findAll();
-        List<Wallet> allWallet = new ArrayList<>();
-        productIterator.forEachRemaining(allWallet::add);
-        return allWallet;
+        return walletRepository.findAll();
     }
 
     @Override
     public Wallet findWalletByUserId(String userId){
-        return walletRepository.findWalletByUserId(userId).orElseThrow(
+        return walletRepository.findByUserId(userId).orElseThrow(
                 () -> new RuntimeException("Wallet doesn't exist"));
     }
 
@@ -41,6 +34,27 @@ public class WalletServiceImpl implements WalletService{
     public Wallet topUpBalance(String userId, Long amount){
         Wallet wallet = findWalletByUserId(userId);
         wallet.setActiveBalance(wallet.getActiveBalance() + amount);
-        return walletRepository.updateWallet(wallet);
+        return walletRepository.save(wallet);
+    }
+
+    @Override
+    public Wallet bidding(String userId, Long amount){
+        Wallet wallet = findWalletByUserId(userId);
+        if(wallet.getActiveBalance() - amount < 0){
+            return walletRepository.save(wallet);
+        }
+        wallet.setActiveBalance(wallet.getActiveBalance() - amount);
+        wallet.setHeldBalance(wallet.getHeldBalance() + amount);
+        return walletRepository.save(wallet);
+    }
+
+    @Override
+    public Wallet withdrawal(String userId, Long amount){
+        Wallet wallet = findWalletByUserId(userId);
+        if(wallet.getActiveBalance() - amount < 0){
+            return walletRepository.save(wallet);
+        }
+        wallet.setActiveBalance(wallet.getActiveBalance() - amount);
+        return walletRepository.save(wallet);
     }
 }
