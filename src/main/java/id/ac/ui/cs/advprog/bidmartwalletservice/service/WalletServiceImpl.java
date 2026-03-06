@@ -68,4 +68,21 @@ public class WalletServiceImpl implements WalletService{
         transactionRepository.save(history);
         return walletRepository.save(wallet);
     }
+
+    @Override
+     public void cancelBid(String userId, String bidId){
+        Wallet wallet = findWalletByUserId(userId);
+        WalletTransaction transaction = transactionRepository.findById(bidId).orElseThrow(
+                ()-> new RuntimeException("Transaksi tidak ditemukan"));
+        if(!userId.equals(transaction.getUserId())){
+            return;
+        }
+        Long amount = transaction.getAmount();
+        wallet.setHeldBalance(wallet.getHeldBalance() - amount);
+        wallet.setActiveBalance((wallet.getActiveBalance()) + amount);
+        WalletTransaction history = new WalletTransaction(userId, "CANCEL_BID", amount);
+        transactionRepository.save(history);
+        walletRepository.save(wallet);
+
+    }
 }

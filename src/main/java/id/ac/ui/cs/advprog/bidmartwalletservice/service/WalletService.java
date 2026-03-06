@@ -11,4 +11,5 @@ public interface WalletService {
     Wallet topUpBalance(String userId, Long amount);
     Wallet bidding(String userId, Long amount);
     Wallet withdrawal(String userId, Long amount);
+    void cancelBid(String userId, String bidId);
 }
