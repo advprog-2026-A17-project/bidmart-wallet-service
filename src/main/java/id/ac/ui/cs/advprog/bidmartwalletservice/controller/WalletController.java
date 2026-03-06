@@ -1,66 +1,59 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.controller;
 
+import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletTransactionRepository;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-
-@Controller
+@RestController
 @RequestMapping("/api/v1/wallet")
 public class WalletController {
 
     private final WalletService walletService;
     private final WalletTransactionRepository transactionRepository;
 
-    public WalletController(WalletService walletService, WalletTransactionRepository walletTransactionRepository) {
+    public WalletController(WalletService walletService, WalletTransactionRepository transactionRepository) {
         this.walletService = walletService;
-        this.transactionRepository = walletTransactionRepository;
-
-    }
-
-    @GetMapping("/")
-    public String showTestPage(Model model) {
-        List<Wallet> allWallets = walletService.findAll();
-        model.addAttribute("wallets", allWallets);
-        return "WalletPage";
-    }
-    @PostMapping("/add")
-    public String addWalletManually(@ModelAttribute Wallet wallet) {
-        walletService.create(wallet);
-        return "redirect:/";
+        this.transactionRepository = transactionRepository;
     }
 
     @GetMapping("/{userId}")
-    public String getWallet(@PathVariable String userId, Model model) {
+    public ResponseEntity<Map<String, Object>> getWalletDetail(@PathVariable String userId) {
         Wallet wallet = walletService.findWalletByUserId(userId);
         List<WalletTransaction> history = transactionRepository.findHistoryByUserId(userId);
-        model.addAttribute("wallet", wallet);
-        model.addAttribute("history", history);
-        return "WalletDetail";
+        Map<String, Object> response = new HashMap<>();
+        response.put("wallet", wallet);
+        response.put("history", history);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<Wallet> addWalletManually(@RequestBody Wallet wallet) {
+        Wallet savedWallet = walletService.create(wallet);
+        return ResponseEntity.ok(savedWallet);
     }
 
     @PostMapping("/{userId}/top-up")
-    public String topUp(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        walletService.topUpBalance(userId, amount);
-        return "redirect:/api/v1/wallet/" + userId;
+    public ResponseEntity<Wallet> topUp(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        Wallet updatedWallet = walletService.topUpBalance(userId, amount);
+        return ResponseEntity.ok(updatedWallet);
     }
 
     @PostMapping("/{userId}/trybid")
-    public String tryToBid(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        walletService.bidding(userId, amount);
-        return "redirect:/api/v1/wallet/" + userId;
+    public ResponseEntity<Wallet> tryToBid(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        Wallet updatedWallet = walletService.bidding(userId, amount);
+        return ResponseEntity.ok(updatedWallet);
     }
+
     @PostMapping("/{userId}/withdraw")
-    public String withdraw(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        walletService.withdrawal(userId, amount);
-        return "redirect:/api/v1/wallet/" + userId;
+    public ResponseEntity<Wallet> withdraw(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        Wallet updatedWallet = walletService.withdrawal(userId, amount);
+        return ResponseEntity.ok(updatedWallet);
     }
 }

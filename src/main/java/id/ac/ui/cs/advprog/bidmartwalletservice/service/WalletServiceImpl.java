@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletRepository;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletTransactionRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ public class WalletServiceImpl implements WalletService{
     }
 
     @Override
+    @Transactional
     public Wallet topUpBalance(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
         wallet.setActiveBalance(wallet.getActiveBalance().add(amount));
@@ -46,10 +48,11 @@ public class WalletServiceImpl implements WalletService{
     }
 
     @Override
+    @Transactional
     public Wallet bidding(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
         if(wallet.getActiveBalance().compareTo(amount) < 0){
-            return walletRepository.save(wallet);
+            throw new RuntimeException("Saldo tidak mencukupi untuk melakukan Bidding");
         }
         wallet.setActiveBalance(wallet.getActiveBalance().subtract(amount));
         wallet.setHeldBalance(wallet.getHeldBalance().add(amount));
@@ -59,10 +62,11 @@ public class WalletServiceImpl implements WalletService{
     }
 
     @Override
+    @Transactional
     public Wallet withdrawal(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
         if(wallet.getActiveBalance().compareTo(amount) < 0){
-            return walletRepository.save(wallet);
+            throw new RuntimeException("Saldo tidak mencukupi untuk melakukan penarikan");
         }
         wallet.setActiveBalance(wallet.getActiveBalance().subtract(amount));
         WalletTransaction history = new WalletTransaction(userId, "WITHDRAW", amount);
@@ -76,7 +80,7 @@ public class WalletServiceImpl implements WalletService{
         WalletTransaction transaction = transactionRepository.findById(bidId).orElseThrow(
                 ()-> new RuntimeException("Transaksi tidak ditemukan"));
         if(!userId.equals(transaction.getUserId())){
-            return;
+            throw new RuntimeException("Akses ditolak: Transaksi ini bukan milik Anda");
         }
         BigDecimal amount = transaction.getAmount();
         wallet.setHeldBalance(wallet.getHeldBalance().subtract(amount));
