@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "wallets")
 @Getter
@@ -19,8 +21,9 @@ public class Wallet {
     private String userId;
 
     @Column(nullable = false)
-    private Double activeBalance = 0.0;
+    private BigDecimal activeBalance = BigDecimal.ZERO;
 
     @Column(nullable = false)
-    private Double heldBalance = 0.0;
+    private BigDecimal heldBalance = BigDecimal.ZERO;
+
 }

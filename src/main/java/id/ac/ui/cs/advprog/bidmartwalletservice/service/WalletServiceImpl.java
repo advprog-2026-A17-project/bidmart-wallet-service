@@ -5,6 +5,8 @@ import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletRepository;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletTransactionRepository;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -35,35 +37,34 @@ public class WalletServiceImpl implements WalletService{
     }
 
     @Override
-    public Wallet topUpBalance(String userId, Long amount){
+    public Wallet topUpBalance(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
-        wallet.setActiveBalance(wallet.getActiveBalance() + amount);
+        wallet.setActiveBalance(wallet.getActiveBalance().add(amount));
         WalletTransaction history = new WalletTransaction(userId, "TOP_UP", amount);
         transactionRepository.save(history);
         return walletRepository.save(wallet);
-
     }
 
     @Override
-    public Wallet bidding(String userId, Long amount){
+    public Wallet bidding(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
-        if(wallet.getActiveBalance() - amount < 0){
+        if(wallet.getActiveBalance().compareTo(amount) < 0){
             return walletRepository.save(wallet);
         }
-        wallet.setActiveBalance(wallet.getActiveBalance() - amount);
-        wallet.setHeldBalance(wallet.getHeldBalance() + amount);
+        wallet.setActiveBalance(wallet.getActiveBalance().subtract(amount));
+        wallet.setHeldBalance(wallet.getHeldBalance().add(amount));
         WalletTransaction history = new WalletTransaction(userId, "BID", amount);
         transactionRepository.save(history);
         return walletRepository.save(wallet);
     }
 
     @Override
-    public Wallet withdrawal(String userId, Long amount){
+    public Wallet withdrawal(String userId, BigDecimal amount){
         Wallet wallet = findWalletByUserId(userId);
-        if(wallet.getActiveBalance() - amount < 0){
+        if(wallet.getActiveBalance().compareTo(amount) < 0){
             return walletRepository.save(wallet);
         }
-        wallet.setActiveBalance(wallet.getActiveBalance() - amount);
+        wallet.setActiveBalance(wallet.getActiveBalance().subtract(amount));
         WalletTransaction history = new WalletTransaction(userId, "WITHDRAW", amount);
         transactionRepository.save(history);
         return walletRepository.save(wallet);
@@ -77,9 +78,9 @@ public class WalletServiceImpl implements WalletService{
         if(!userId.equals(transaction.getUserId())){
             return;
         }
-        Long amount = transaction.getAmount();
-        wallet.setHeldBalance(wallet.getHeldBalance() - amount);
-        wallet.setActiveBalance((wallet.getActiveBalance()) + amount);
+        BigDecimal amount = transaction.getAmount();
+        wallet.setHeldBalance(wallet.getHeldBalance().subtract(amount));
+        wallet.setActiveBalance((wallet.getActiveBalance()).add(amount));
         WalletTransaction history = new WalletTransaction(userId, "CANCEL_BID", amount);
         transactionRepository.save(history);
         walletRepository.save(wallet);

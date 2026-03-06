@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.bidmartwalletservice.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -18,11 +19,9 @@ public class WalletController {
 
     private final WalletService walletService;
     private final WalletTransactionRepository transactionRepository;
-    private final WalletTransactionRepository walletTransactionRepository;
 
     public WalletController(WalletService walletService, WalletTransactionRepository walletTransactionRepository) {
         this.walletService = walletService;
-        this.walletTransactionRepository = walletTransactionRepository;
         this.transactionRepository = walletTransactionRepository;
 
     }
@@ -49,18 +48,18 @@ public class WalletController {
     }
 
     @PostMapping("/{userId}/top-up")
-    public String topUp(@PathVariable String userId, @RequestParam Long amount) {
+    public String topUp(@PathVariable String userId, @RequestParam BigDecimal amount) {
         walletService.topUpBalance(userId, amount);
         return "redirect:/api/v1/wallet/" + userId;
     }
 
     @PostMapping("/{userId}/trybid")
-    public String tryToBid(@PathVariable String userId, @RequestParam Long amount) {
+    public String tryToBid(@PathVariable String userId, @RequestParam BigDecimal amount) {
         walletService.bidding(userId, amount);
         return "redirect:/api/v1/wallet/" + userId;
     }
     @PostMapping("/{userId}/withdraw")
-    public String withdraw(@PathVariable String userId, @RequestParam Long amount) {
+    public String withdraw(@PathVariable String userId, @RequestParam BigDecimal amount) {
         walletService.withdrawal(userId, amount);
         return "redirect:/api/v1/wallet/" + userId;
     }
