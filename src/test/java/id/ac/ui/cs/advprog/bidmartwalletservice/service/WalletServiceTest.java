@@ -66,4 +66,48 @@ class WalletServiceImplTest {
         assertEquals(15000L, result.getActiveBalance());
         verify(walletRepository, times(1)).updateWallet(any(Wallet.class));
     }
+
+    @Test
+    void testHoldFunds_Success() {
+        when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
+        when(walletRepository.updateWallet(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Wallet result = walletService.holdFunds("userTest", 2500);
+
+        assertEquals(7500, result.getActiveBalance());
+        assertEquals(2500, result.getHeldBalance());
+    }
+
+    @Test
+    void testHoldFunds_InsufficientBalance() {
+        when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
+
+        assertThrows(IllegalStateException.class, () -> walletService.holdFunds("userTest", 15000));
+    }
+
+    @Test
+    void testReleaseFunds_Success() {
+        wallet.setHeldBalance(5000);
+        wallet.setActiveBalance(6000);
+        when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
+        when(walletRepository.updateWallet(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Wallet result = walletService.releaseFunds("userTest", 2000);
+
+        assertEquals(8000, result.getActiveBalance());
+        assertEquals(3000, result.getHeldBalance());
+    }
+
+    @Test
+    void testConvertHeldFunds_Success() {
+        wallet.setHeldBalance(5000);
+        wallet.setActiveBalance(6000);
+        when(walletRepository.findWalletByUserId("userTest")).thenReturn(Optional.of(wallet));
+        when(walletRepository.updateWallet(any(Wallet.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Wallet result = walletService.convertHeldFunds("userTest", 3000);
+
+        assertEquals(6000, result.getActiveBalance());
+        assertEquals(2000, result.getHeldBalance());
+    }
 }
