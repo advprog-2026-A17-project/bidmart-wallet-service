@@ -1,36 +1,21 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.ConvertFundsRequest;
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.HoldFundsRequest;
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.ReleaseFundsRequest;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.service.WalletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-
-@Controller
-//@RestController
-//@RequestMapping("/api/wallet")
+@RestController
+@RequestMapping({"/api/v1/wallet", "/api/wallet"})
 public class WalletController {
 
     private final WalletService walletService;
 
     public WalletController(WalletService walletService) {
         this.walletService = walletService;
-    }
-
-    @GetMapping("/")
-    public String showTestPage(Model model) {
-        List<Wallet> allWallets = walletService.findAll();
-        model.addAttribute("wallets", allWallets);
-        return "WalletPage";
-    }
-    @PostMapping("/add")
-    public String addWalletManually(@ModelAttribute Wallet wallet) {
-        walletService.create(wallet);
-        return "redirect:/";
     }
 
     @GetMapping("/{userId}")
@@ -42,6 +27,24 @@ public class WalletController {
     @PostMapping("/{userId}/top-up")
     public ResponseEntity<Wallet> topUp(@PathVariable String userId, @RequestParam Long amount) {
         Wallet updatedWallet = walletService.topUpBalance(userId, amount);
+        return ResponseEntity.ok(updatedWallet);
+    }
+
+    @PostMapping("/hold")
+    public ResponseEntity<Wallet> holdFunds(@RequestBody HoldFundsRequest request) {
+        Wallet updatedWallet = walletService.holdFunds(request.userId(), request.amount());
+        return ResponseEntity.ok(updatedWallet);
+    }
+
+    @PostMapping("/release")
+    public ResponseEntity<Wallet> releaseFunds(@RequestBody ReleaseFundsRequest request) {
+        Wallet updatedWallet = walletService.releaseFunds(request.userId(), request.amount());
+        return ResponseEntity.ok(updatedWallet);
+    }
+
+    @PostMapping("/convert")
+    public ResponseEntity<Wallet> convertHeldFunds(@RequestBody ConvertFundsRequest request) {
+        Wallet updatedWallet = walletService.convertHeldFunds(request.userId(), request.amount());
         return ResponseEntity.ok(updatedWallet);
     }
 }

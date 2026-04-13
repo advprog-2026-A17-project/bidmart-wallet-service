@@ -43,4 +43,51 @@ public class WalletServiceImpl implements WalletService{
         wallet.setActiveBalance(wallet.getActiveBalance() + amount);
         return walletRepository.updateWallet(wallet);
     }
+
+    @Override
+    public Wallet holdFunds(String userId, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        Wallet wallet = findWalletByUserId(userId);
+        if (wallet.getActiveBalance() < amount) {
+            throw new IllegalStateException("Insufficient active balance");
+        }
+
+        wallet.setActiveBalance(wallet.getActiveBalance() - amount);
+        wallet.setHeldBalance(wallet.getHeldBalance() + amount);
+        return walletRepository.updateWallet(wallet);
+    }
+
+    @Override
+    public Wallet releaseFunds(String userId, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        Wallet wallet = findWalletByUserId(userId);
+        if (wallet.getHeldBalance() < amount) {
+            throw new IllegalStateException("Insufficient held balance");
+        }
+
+        wallet.setHeldBalance(wallet.getHeldBalance() - amount);
+        wallet.setActiveBalance(wallet.getActiveBalance() + amount);
+        return walletRepository.updateWallet(wallet);
+    }
+
+    @Override
+    public Wallet convertHeldFunds(String userId, double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        Wallet wallet = findWalletByUserId(userId);
+        if (wallet.getHeldBalance() < amount) {
+            throw new IllegalStateException("Insufficient held balance");
+        }
+
+        wallet.setHeldBalance(wallet.getHeldBalance() - amount);
+        return walletRepository.updateWallet(wallet);
+    }
 }
