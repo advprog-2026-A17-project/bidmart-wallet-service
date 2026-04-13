@@ -9,4 +9,7 @@ public interface WalletService {
     List<Wallet> findAll();
     Wallet findWalletByUserId(String userId);
     Wallet topUpBalance(String userId, Long amount);
+    Wallet holdFunds(String userId, double amount);
+    Wallet releaseFunds(String userId, double amount);
+    Wallet convertHeldFunds(String userId, double amount);
 }
