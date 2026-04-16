@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.service;
 
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.WalletProvisionRequestedV1;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class WalletServiceImpl implements WalletService{
@@ -88,5 +90,17 @@ public class WalletServiceImpl implements WalletService{
         WalletTransaction history = new WalletTransaction(userId, "CANCEL_BID", amount);
         transactionRepository.save(history);
         walletRepository.save(wallet);
+    }
+
+    @Override
+    @Transactional
+    public void provisionWallet(WalletProvisionRequestedV1 event) {
+        Optional<Wallet> existingWallet = walletRepository.findByUserId(event.userId());
+        if (existingWallet.isPresent()) {
+            return;
+        }
+        Wallet newWallet = new Wallet();
+        newWallet.setUserId(event.userId());
+        walletRepository.save(newWallet);
     }
 }
