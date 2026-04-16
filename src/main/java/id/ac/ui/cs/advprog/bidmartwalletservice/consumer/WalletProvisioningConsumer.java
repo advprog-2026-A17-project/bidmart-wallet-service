@@ -13,7 +13,7 @@ public class WalletProvisioningConsumer {
     public WalletProvisioningConsumer(WalletService walletService) {
         this.walletService = walletService;
     }
-    @RabbitListener(queues = "wallet.provisioning.queue")
+    @RabbitListener(queues = "${app.wallet.provisioning.queue}")
     public void consumeProvisioningEvent(WalletProvisionRequestedV1 event) {
         walletService.provisionWallet(event);
     }
