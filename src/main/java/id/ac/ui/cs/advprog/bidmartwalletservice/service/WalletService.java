@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.service;
 
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.WalletProvisionRequestedV1;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 
 import java.math.BigDecimal;
@@ -13,4 +14,5 @@ public interface WalletService {
     Wallet bidding(String userId, BigDecimal amount);
     Wallet withdrawal(String userId, BigDecimal amount);
     void cancelBid(String userId, String bidId);
+    void provisionWallet(WalletProvisionRequestedV1 event);
 }
