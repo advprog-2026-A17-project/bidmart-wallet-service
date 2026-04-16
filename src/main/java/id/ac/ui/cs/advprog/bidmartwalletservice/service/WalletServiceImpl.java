@@ -75,7 +75,7 @@ public class WalletServiceImpl implements WalletService{
     }
 
     @Override
-     public void cancelBid(String userId, String bidId){
+    public void cancelBid(String userId, String bidId){
         Wallet wallet = findWalletByUserId(userId);
         WalletTransaction transaction = transactionRepository.findById(bidId).orElseThrow(
                 ()-> new RuntimeException("Transaksi tidak ditemukan"));
@@ -88,6 +88,5 @@ public class WalletServiceImpl implements WalletService{
         WalletTransaction history = new WalletTransaction(userId, "CANCEL_BID", amount);
         transactionRepository.save(history);
         walletRepository.save(wallet);
-
     }
 }
