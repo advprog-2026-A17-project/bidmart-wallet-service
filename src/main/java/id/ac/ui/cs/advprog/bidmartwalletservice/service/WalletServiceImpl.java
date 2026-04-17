@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.service;
 
 import id.ac.ui.cs.advprog.bidmartwalletservice.dto.WalletProvisionRequestedV1;
+import id.ac.ui.cs.advprog.bidmartwalletservice.exception.WalletNotFoundException;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletProvisioningEvent;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
@@ -53,7 +54,7 @@ public class WalletServiceImpl implements WalletService {
     @Transactional(readOnly = true)
     public Wallet findWalletByUserId(String userId) {
         return walletRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Wallet doesn't exist"));
+                .orElseThrow(() -> new WalletNotFoundException("Wallet doesn't exist"));
     }
 
     @Override
@@ -116,10 +117,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public Wallet bidding(String userId, BigDecimal amount) {
-        validatePositiveAmount(amount);
-        Wallet wallet = holdFunds(userId, amount);
-        transactionRepository.save(new WalletTransaction(userId, "BID", amount));
-        return wallet;
+        return executeHeldBalanceOperation(userId, amount, "BID");
     }
 
     @Override
@@ -142,9 +140,9 @@ public class WalletServiceImpl implements WalletService {
     public void cancelBid(String userId, String bidId) {
         Wallet wallet = findWalletByUserId(userId);
         WalletTransaction transaction = transactionRepository.findById(bidId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Transaction not found"));
         if (!userId.equals(transaction.getUserId())) {
-            throw new RuntimeException("Forbidden transaction access");
+            throw new IllegalStateException("Forbidden transaction access");
         }
 
         BigDecimal amount = transaction.getAmount();
@@ -177,11 +175,17 @@ public class WalletServiceImpl implements WalletService {
             return;
         }
 
-        walletRepository.findByUserId(event.userId()).orElseGet(() -> {
+        if (walletRepository.findByUserId(event.userId()).isPresent()) {
+            return;
+        }
+
+        try {
             Wallet wallet = new Wallet();
             wallet.setUserId(event.userId());
-            return walletRepository.save(wallet);
-        });
+            walletRepository.save(wallet);
+        } catch (DataIntegrityViolationException duplicateWallet) {
+            LOGGER.info("Skip duplicate wallet creation userId={} due to unique constraint", event.userId());
+        }
     }
 
     @Override
@@ -202,8 +206,12 @@ public class WalletServiceImpl implements WalletService {
 
             Wallet wallet = new Wallet();
             wallet.setUserId(event.getUserId());
-            walletRepository.save(wallet);
-            createdCount += 1;
+            try {
+                walletRepository.save(wallet);
+                createdCount += 1;
+            } catch (DataIntegrityViolationException duplicateWallet) {
+                LOGGER.info("Skip duplicate reconciliation wallet userId={}", event.getUserId());
+            }
         }
 
         if (createdCount > 0) {
@@ -216,5 +224,19 @@ public class WalletServiceImpl implements WalletService {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Amount must be greater than zero");
         }
+    }
+
+    private Wallet executeHeldBalanceOperation(String userId, BigDecimal amount, String transactionType) {
+        validatePositiveAmount(amount);
+
+        Wallet wallet = findWalletByUserId(userId);
+        if (wallet.getActiveBalance().compareTo(amount) < 0) {
+            throw new IllegalStateException("Insufficient active balance");
+        }
+
+        wallet.setActiveBalance(wallet.getActiveBalance().subtract(amount));
+        wallet.setHeldBalance(wallet.getHeldBalance().add(amount));
+        transactionRepository.save(new WalletTransaction(userId, transactionType, amount));
+        return walletRepository.save(wallet);
     }
 }

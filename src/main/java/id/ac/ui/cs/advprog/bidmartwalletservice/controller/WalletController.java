@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.controller;
 
-import id.ac.ui.cs.advprog.bidmartwalletservice.dto.ConvertFundsRequest;
-import id.ac.ui.cs.advprog.bidmartwalletservice.dto.HoldFundsRequest;
-import id.ac.ui.cs.advprog.bidmartwalletservice.dto.ReleaseFundsRequest;
+import id.ac.ui.cs.advprog.bidmartwalletservice.dto.*;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.WalletTransaction;
 import id.ac.ui.cs.advprog.bidmartwalletservice.repository.WalletTransactionRepository;
@@ -11,9 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/v1/wallet", "/api/wallet"})
@@ -31,53 +27,78 @@ public class WalletController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<Wallet> getWallet(@PathVariable String userId) {
+    public ResponseEntity<WalletResponse> getWallet(@PathVariable String userId) {
         Wallet wallet = walletService.findWalletByUserId(userId);
-        return ResponseEntity.ok(wallet);
+        return ResponseEntity.ok(toWalletResponse(wallet));
     }
 
     @GetMapping("/{userId}/detail")
-    public ResponseEntity<Map<String, Object>> getWalletDetail(@PathVariable String userId) {
+    public ResponseEntity<WalletDetailResponse> getWalletDetail(@PathVariable String userId) {
         Wallet wallet = walletService.findWalletByUserId(userId);
-        List<WalletTransaction> history = transactionRepository.findAllByUserIdOrderByTimestampDesc(userId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("wallet", wallet);
-        response.put("history", history);
-        return ResponseEntity.ok(response);
+        List<WalletTransactionResponse> history = transactionRepository.findAllByUserIdOrderByTimestampDesc(userId)
+                .stream()
+                .map(this::toWalletTransactionResponse)
+                .toList();
+
+        return ResponseEntity.ok(new WalletDetailResponse(toWalletResponse(wallet), history));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Wallet> addWalletManually(@RequestBody Wallet wallet) {
-        return ResponseEntity.ok(walletService.create(wallet));
+    public ResponseEntity<WalletResponse> addWalletManually(@RequestBody WalletCreateRequest request) {
+        Wallet wallet = new Wallet();
+        wallet.setUserId(request.userId());
+        wallet.setActiveBalance(request.activeBalance() == null ? BigDecimal.ZERO : request.activeBalance());
+        wallet.setHeldBalance(request.heldBalance() == null ? BigDecimal.ZERO : request.heldBalance());
+
+        return ResponseEntity.ok(toWalletResponse(walletService.create(wallet)));
     }
 
     @PostMapping("/{userId}/top-up")
-    public ResponseEntity<Wallet> topUp(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        return ResponseEntity.ok(walletService.topUpBalance(userId, amount));
+    public ResponseEntity<WalletResponse> topUp(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(toWalletResponse(walletService.topUpBalance(userId, amount)));
     }
 
     @PostMapping("/hold")
-    public ResponseEntity<Wallet> holdFunds(@RequestBody HoldFundsRequest request) {
-        return ResponseEntity.ok(walletService.holdFunds(request.userId(), request.amount()));
+    public ResponseEntity<WalletResponse> holdFunds(@RequestBody HoldFundsRequest request) {
+        return ResponseEntity.ok(toWalletResponse(walletService.holdFunds(request.userId(), request.amount())));
     }
 
     @PostMapping("/release")
-    public ResponseEntity<Wallet> releaseFunds(@RequestBody ReleaseFundsRequest request) {
-        return ResponseEntity.ok(walletService.releaseFunds(request.userId(), request.amount()));
+    public ResponseEntity<WalletResponse> releaseFunds(@RequestBody ReleaseFundsRequest request) {
+        return ResponseEntity.ok(toWalletResponse(walletService.releaseFunds(request.userId(), request.amount())));
     }
 
     @PostMapping("/convert")
-    public ResponseEntity<Wallet> convertHeldFunds(@RequestBody ConvertFundsRequest request) {
-        return ResponseEntity.ok(walletService.convertHeldFunds(request.userId(), request.amount()));
+    public ResponseEntity<WalletResponse> convertHeldFunds(@RequestBody ConvertFundsRequest request) {
+        return ResponseEntity.ok(toWalletResponse(walletService.convertHeldFunds(request.userId(), request.amount())));
     }
 
     @PostMapping("/{userId}/trybid")
-    public ResponseEntity<Wallet> tryToBid(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        return ResponseEntity.ok(walletService.bidding(userId, amount));
+    public ResponseEntity<WalletResponse> tryToBid(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(toWalletResponse(walletService.bidding(userId, amount)));
     }
 
     @PostMapping("/{userId}/withdraw")
-    public ResponseEntity<Wallet> withdraw(@PathVariable String userId, @RequestParam BigDecimal amount) {
-        return ResponseEntity.ok(walletService.withdrawal(userId, amount));
+    public ResponseEntity<WalletResponse> withdraw(@PathVariable String userId, @RequestParam BigDecimal amount) {
+        return ResponseEntity.ok(toWalletResponse(walletService.withdrawal(userId, amount)));
+    }
+
+    private WalletResponse toWalletResponse(Wallet wallet) {
+        return new WalletResponse(
+                wallet.getId(),
+                wallet.getUserId(),
+                wallet.getActiveBalance(),
+                wallet.getHeldBalance()
+        );
+    }
+
+    private WalletTransactionResponse toWalletTransactionResponse(WalletTransaction transaction) {
+        return new WalletTransactionResponse(
+                transaction.getId(),
+                transaction.getUserId(),
+                transaction.getType(),
+                transaction.getAmount(),
+                transaction.getTimestamp()
+        );
     }
 }
