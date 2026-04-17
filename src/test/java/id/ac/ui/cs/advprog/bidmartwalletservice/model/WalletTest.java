@@ -1,39 +1,42 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.model;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
-public class WalletTest {
-    Wallet wallet;
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class WalletTest {
+
+    private Wallet wallet;
 
     @BeforeEach
-    void setUp(){
-        this.wallet = new Wallet();
-        this.wallet.setId(0L);
-        this.wallet.setUserId("userTest");
-        this.wallet.setActiveBalance(10000);
-        this.wallet.setHeldBalance(5000);
+    void setUp() {
+        wallet = new Wallet();
+        wallet.setId("wallet-1");
+        wallet.setUserId("userTest");
+        wallet.setActiveBalance(new BigDecimal("10000"));
+        wallet.setHeldBalance(new BigDecimal("5000"));
     }
 
     @Test
     void testGetWalletId() {
-        assertEquals(0L, this.wallet.getId());
+        assertEquals("wallet-1", wallet.getId());
     }
 
     @Test
     void testGetWalletActiveBalance() {
-        assertEquals(10000, this.wallet.getActiveBalance());
+        assertEquals(new BigDecimal("10000"), wallet.getActiveBalance());
     }
 
     @Test
     void testGetWalletHeldBalance() {
-        assertEquals(5000, this.wallet.getHeldBalance());
+        assertEquals(new BigDecimal("5000"), wallet.getHeldBalance());
     }
 
     @Test
-    void testGetUserIdInWallet(){
-        assertEquals("userTest", this.wallet.getUserId());
+    void testGetUserIdInWallet() {
+        assertEquals("userTest", wallet.getUserId());
     }
 }

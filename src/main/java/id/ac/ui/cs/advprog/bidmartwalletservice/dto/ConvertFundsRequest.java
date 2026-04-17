@@ -1,4 +1,6 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.dto;
 
-public record ConvertFundsRequest(String userId, double amount, String description) {
+import java.math.BigDecimal;
+
+public record ConvertFundsRequest(String userId, BigDecimal amount, String description) {
 }
