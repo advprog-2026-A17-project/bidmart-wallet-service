@@ -11,8 +11,12 @@ public interface WalletService {
     List<Wallet> findAll();
     Wallet findWalletByUserId(String userId);
     Wallet topUpBalance(String userId, BigDecimal amount);
+    Wallet holdFunds(String userId, BigDecimal amount);
+    Wallet releaseFunds(String userId, BigDecimal amount);
+    Wallet convertHeldFunds(String userId, BigDecimal amount);
     Wallet bidding(String userId, BigDecimal amount);
     Wallet withdrawal(String userId, BigDecimal amount);
     void cancelBid(String userId, String bidId);
     void provisionWallet(WalletProvisionRequestedV1 event);
+    int reconcileProvisionedWallets(int batchSize);
 }
