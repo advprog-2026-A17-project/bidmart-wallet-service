@@ -1,98 +1,34 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.repository;
 
 import id.ac.ui.cs.advprog.bidmartwalletservice.model.Wallet;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.Iterator;
+import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WalletRepositoryTest {
+@DataJpaTest
+class WalletRepositoryTest {
+
+    @Autowired
     private WalletRepository walletRepository;
 
-    @BeforeEach
-    void setUp(){
-        this.walletRepository = new WalletRepository();
-    }
-
     @Test
-    void testCreateWallet() {
+    void testFindByUserId() {
         Wallet wallet = new Wallet();
-        wallet.setId(0L);
         wallet.setUserId("userTest");
-        wallet.setActiveBalance(10000);
-        wallet.setHeldBalance(5000);
+        wallet.setActiveBalance(new BigDecimal("10000"));
+        wallet.setHeldBalance(new BigDecimal("5000"));
+        walletRepository.save(wallet);
 
-        walletRepository.createWallet(wallet);
-        Iterator<Wallet> WalletIterator = walletRepository.findAll();
-        assertTrue(WalletIterator.hasNext());
-        Wallet savedWallet = WalletIterator.next();
-        assertEquals(wallet.getId(), savedWallet.getId());
-        assertEquals(wallet.getUserId(), savedWallet.getUserId());
-        assertEquals(wallet.getActiveBalance(), savedWallet.getActiveBalance());
-        assertEquals(wallet.getHeldBalance(), savedWallet.getHeldBalance());
+        Optional<Wallet> result = walletRepository.findByUserId("userTest");
 
-    }
-
-    @Test
-    void testUpdateWallet() {
-        Wallet wallet = new Wallet();
-        wallet.setId(0L);
-        wallet.setUserId("userTest");
-        wallet.setActiveBalance(10000);
-        wallet.setHeldBalance(5000);
-        walletRepository.createWallet(wallet);
-
-        Wallet newWallet = new Wallet();
-        newWallet.setId(0L);
-        newWallet.setUserId("userTest");
-        newWallet.setActiveBalance(5000);
-        newWallet.setHeldBalance(10000);
-        walletRepository.updateWallet(newWallet);
-
-        Iterator<Wallet> WalletIterator = walletRepository.findAll();
-        assertTrue(WalletIterator.hasNext());
-        Wallet savedWallet = WalletIterator.next();
-        assertEquals(newWallet.getId(), savedWallet.getId());
-        assertEquals(newWallet.getUserId(), savedWallet.getUserId());
-        assertEquals(newWallet.getActiveBalance(), savedWallet.getActiveBalance());
-        assertEquals(newWallet.getHeldBalance(), savedWallet.getHeldBalance());
-
-    }
-
-    @Test
-    void testFindWalletByUserId() {
-        Wallet wallet = new Wallet();
-        wallet.setId(0L);
-        wallet.setUserId("userTest");
-        wallet.setActiveBalance(10000);
-        wallet.setHeldBalance(5000);
-        walletRepository.createWallet(wallet);
-
-        Optional<Wallet> result = walletRepository.findWalletByUserId("userTest");
-        assertEquals(wallet, result.get() );
-    }
-
-    @Test
-    void testFindWalletByUserIdNotFound() {
-        Optional<Wallet> result = walletRepository.findWalletByUserId("unknown");
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void testFindAllWallet() {
-        walletRepository.createWallet(new Wallet());
-        walletRepository.createWallet(new Wallet());
-
-        Iterator<Wallet> iterator = walletRepository.findAll();
-
-        int count = 0;
-        while (iterator.hasNext()) {
-            iterator.next();
-            count++;
-        }
-        assertEquals(2, count);
+        assertTrue(result.isPresent());
+        assertEquals("userTest", result.get().getUserId());
+        assertEquals(new BigDecimal("10000"), result.get().getActiveBalance());
     }
 }

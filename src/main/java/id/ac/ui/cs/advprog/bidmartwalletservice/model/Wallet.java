@@ -1,12 +1,29 @@
 package id.ac.ui.cs.advprog.bidmartwalletservice.model;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-@Getter @Setter
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "wallets")
+@Getter
+@Setter
+@NoArgsConstructor
 public class Wallet {
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
-    private double activeBalance;
-    private double heldBalance;
+
+    @Column(nullable = false)
+    private BigDecimal activeBalance = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private BigDecimal heldBalance = BigDecimal.ZERO;
+
 }

@@ -1,0 +1,14 @@
+CREATE TABLE wallets (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL UNIQUE,
+    active_balance DECIMAL NOT NULL DEFAULT 0,
+    held_balance DECIMAL NOT NULL DEFAULT 0
+);
+
+CREATE TABLE wallet_transactions (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    amount DECIMAL NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
